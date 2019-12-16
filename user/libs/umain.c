@@ -7,7 +7,7 @@ int main(int argc, char *argv[]);
 
 static int
 initfd(int fd2, const char *path, uint32_t open_flags) {
-    int fd1, ret;
+    int fd1, ret = fd2;
     if ((fd1 = open(path, open_flags)) < 0) {
         return fd1;
     }
