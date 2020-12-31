@@ -6,8 +6,16 @@ ON_FPGA :=y
 
 V       := @
 
-GCCPREFIX:=mips-sde-elf-
-GCCPREFIX ?= /home/guest/cpu/build-gcc/mips_gcc/bin/mips-sde-elf-
+GCCPREFIX:=mipsel-linux-gnu-
+
+QEMU:= /opt/mipsel-softmmu/qemu-system-mipsel
+QEMUOPTS:= -M ls232 -m 128 -no-reboot -serial stdio -parallel null
+# You should compile qemu for ls232 cpu from https://gitee.com/loongsonlab/qemu
+# Every tools except qemu can be installed correctly from debian bullseye repo
+
+
+TERMINAL := gnome-terminal
+TERMINALOPT := -e
 
 # eliminate default suffix rules
 .SUFFIXES: .c .S .h
@@ -17,12 +25,12 @@ GCCPREFIX ?= /home/guest/cpu/build-gcc/mips_gcc/bin/mips-sde-elf-
 HOSTCC		:= gcc
 HOSTCFLAGS	:= -g -Wall -O2
 
-GDB		:= $(GCCPREFIX)gdb
+GDB		:= gdb-multiarch
 
 THUMIPSCC		:= ./thumips-cc
 CLANG := clang
 CC :=$(GCCPREFIX)gcc
-CFLAGS	:=  -fno-builtin -nostdlib  -nostdinc -g  -EL -G0 -fno-delayed-branch -Wa,-O0
+CFLAGS	:= -fno-builtin-fprintf -fno-builtin -nostdlib  -nostdinc -g  -EL -G0 -fno-delayed-branch -Wa,-O0 -fno-pic -mno-abicalls -mno-shared -mfp32 -ggdb -gstabs
 CTYPE	:= c S
 
 LD      := $(GCCPREFIX)ld
@@ -100,9 +108,9 @@ MAKEDEPEND = $(CLANG) -M $(CFLAGS) $(INCLUDES) -o $(DEPDIR)/$*.d $<
 #vpath %.c $(SRC_DIR)
 #vpath %.S $(SRC_DIR)
 
-.PHONY: all checkdirs clean 
+.PHONY: all checkdirs clean qemu debug
 
-all: checkdirs boot/loader.bin obj/ucore-kernel-initrd
+all: checkdirs boot/loader.bin $(OBJDIR)/ucore-kernel-initrd
 
 $(shell mkdir -p $(DEP_DIR))
 
@@ -125,7 +133,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) -c -mips1 $(INCLUDES) $(CFLAGS) $(MACH_DEF) $<  -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.S
-	$(CC) -mips32 -c -D__ASSEMBLY__ $(MACH_DEF) $(INCLUDES) -g -EL -G0  $<  -o $@
+	$(CC) -mips32 -c -fno-pic -mno-abicalls -mno-shared -D__ASSEMBLY__ $(MACH_DEF) $(INCLUDES) -g -EL -G0  $<  -o $@
 
 checkdirs: $(BUILD_DIR) $(DEP_DIR)
 
@@ -139,7 +147,15 @@ clean:
 	-rm -rf $(BUILD_DIR)
 	-rm -rf $(DEPDIR)
 	-rm -rf boot/loader.o boot/loader boot/loader.bin
+	-rm $(OBJDIR)/ucore-kernel-initrd
 
+qemu: $(OBJDIR)/ucore-kernel-initrd
+	$(QEMU) $(QEMUOPTS) -kernel $(OBJDIR)/ucore-kernel-initrd
+
+debug: $(OBJDIR)/ucore-kernel-initrd
+	@$(QEMU) $(QEMUOPTS) -kernel $(OBJDIR)/ucore-kernel-initrd -S -s&
+	@sleep 1
+	@$(TERMINAL) $(TERMINALOPT) "$(GDB) $(OBJDIR)/ucore-kernel-initrd -q"
 
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPENDS)
@@ -166,7 +182,7 @@ $(USER_OBJDIR)/%.o: $(USER_SRCDIR)/%.c
 	$(CC) -c -mips1  $(USER_INCLUDE) -I$(SRCDIR)/include $(CFLAGS)  $<  -o $@
 
 $(USER_OBJDIR)/%.o: $(USER_SRCDIR)/%.S
-	$(CC) -mips32 -c -D__ASSEMBLY__ $(USER_INCLUDE) -I$(SRCDIR)/include -g -EL -G0  $<  -o $@
+	$(CC) -mips32 -c -fno-pic -mno-abicalls -mno-shared -D__ASSEMBLY__ $(USER_INCLUDE) -I$(SRCDIR)/include -g -EL -G0  $<  -o $@
 
 
 # filesystem
