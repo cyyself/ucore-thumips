@@ -144,10 +144,9 @@ $(DEP_DIR):
 	@mkdir -p $@
 
 clean:
-	-rm -rf $(BUILD_DIR)
 	-rm -rf $(DEPDIR)
 	-rm -rf boot/loader.o boot/loader boot/loader.bin
-	-rm $(OBJDIR)/ucore-kernel-initrd
+	-rm -rf $(OBJDIR)
 
 qemu: $(OBJDIR)/ucore-kernel-initrd
 	$(QEMU) $(QEMUOPTS) -kernel $(OBJDIR)/ucore-kernel-initrd
@@ -204,6 +203,7 @@ $(OBJDIR)/ucore-kernel-initrd:  $(BUILD_DIR) $(TOOL_MKSFS) $(OBJ) $(USER_APP_BIN
 	@echo LINK $@
 	$(LD) -nostdlib -n -G 0 -static -T tools/kernel.ld $(OBJ) \
 				 $(USER_OBJDIR)/initrd.img.o -o $@
+	$(OBJDUMP) -S $@ > $(OBJDIR)/kernel.asm
 	rm -rf $(ROOTFS_DIR)
 
 boot/loader.bin: boot/bootasm.S
