@@ -153,9 +153,8 @@ qemu: $(OBJDIR)/ucore-kernel-initrd
 	$(QEMU) $(QEMUOPTS) -kernel $(OBJDIR)/ucore-kernel-initrd
 
 debug: $(OBJDIR)/ucore-kernel-initrd
-	@$(QEMU) $(QEMUOPTS) -kernel $(OBJDIR)/ucore-kernel-initrd -S -s&
-	@sleep 1
-	@$(TERMINAL) $(TERMINALOPT) "$(GDB) $(OBJDIR)/ucore-kernel-initrd -q"
+	@$(TERMINAL) $(TERMINALOPT) "sh -c \"sleep 1;$(GDB) $(OBJDIR)/ucore-kernel-initrd -q\""
+	@$(QEMU) $(QEMUOPTS) -kernel $(OBJDIR)/ucore-kernel-initrd -S -s
 
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPENDS)
