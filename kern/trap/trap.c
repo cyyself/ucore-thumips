@@ -98,6 +98,7 @@ static void interrupt_handler(struct trapframe *tf)
           break;
         case COM1_IRQ:
           serial_int_handler(NULL);
+          clock_int_handler(NULL);
           break;
         default:
           print_trapframe(tf);
@@ -170,7 +171,16 @@ static void handle_tlbmiss(struct trapframe* tf, int write)
   uint32_t badaddr = tf->tf_vaddr;
   int ret = 0;
   pte_t *pte = get_pte(current_pgdir, tf->tf_vaddr, 0);
+  //kprintf("handle_tlbmiss vaddr=");
+  //printhex(tf->tf_vaddr);
+  //kprintf("\n");
+  /*
+  if (tf->tf_vaddr == 0x10003A00) {
+    print_trapframe(tf);//for debug
+  }
+  */
   if(pte==NULL || ptep_invalid(pte)){   //PTE miss, pgfault
+    //kprintf("PTE miss\n");
     //panic("unimpl");
     //TODO
     //tlb will not be refill in do_pgfault,
@@ -182,7 +192,7 @@ static void handle_tlbmiss(struct trapframe* tf, int write)
     /* check permission */
     if(in_kernel){
       tlb_refill(badaddr, pte); 
-    //kprintf("## refill K\n");
+      //kprintf("## refill K\n");
       return;
     }else{
       if(!ptep_u_read(pte)){
