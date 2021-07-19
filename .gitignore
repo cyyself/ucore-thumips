@@ -3,4 +3,5 @@ boot/loader
 *.d
 obj/
 tools/mkfs
-
+boot/loader.bin
+tools/mksfs

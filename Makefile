@@ -8,8 +8,8 @@ V       := @
 
 GCCPREFIX:=mipsel-linux-gnu-
 
-QEMU:= /opt/mipsel-softmmu/qemu-system-mipsel
-QEMUOPTS:= -M ls232 -m 128 -no-reboot -serial stdio -parallel null
+QEMU:= /opt/mipsel-softmmu/bin/qemu-system-mipsel
+QEMUOPTS:= -M ls232 -m 128 -no-reboot -nographic
 # You should compile qemu for ls232 cpu from https://gitee.com/loongsonlab/qemu
 # Every tools except qemu can be installed correctly from debian bullseye repo
 
