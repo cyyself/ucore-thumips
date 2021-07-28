@@ -7,11 +7,12 @@ ON_FPGA :=y
 V       := @
 
 GCCPREFIX:=mipsel-linux-gnu-
+# You can either use mipsel-linux-gnu- from your linux distro
+# or download from https://mirrors.tuna.tsinghua.edu.cn/loongson/loongson1c_bsp/gcc-4.3/gcc-4.3-ls232.tar.gz
 
 QEMU:= /opt/mipsel-softmmu/bin/qemu-system-mipsel
 QEMUOPTS:= -M ls232 -m 128 -no-reboot -nographic
 # You should compile qemu for ls232 cpu from https://gitee.com/loongsonlab/qemu
-# Every tools except qemu can be installed correctly from debian bullseye repo
 
 
 TERMINAL := gnome-terminal
@@ -169,7 +170,7 @@ $(USER_LIB): $(BUILD_DIR) $(USER_LIB_OBJ)
 define make-user-app
 $1: $(BUILD_DIR) $(addsuffix .o,$1) $(USER_LIB)
 	@echo LINK $$@
-	$(LD) $(FPGA_LD_FLAGS) -T $(USER_LIB_SRCDIR)/user.ld  $(addsuffix .o,$1) $(USER_LIB) -o $$@
+	$(LD) $(FPGA_LD_FLAGS) -T $(USER_LIB_SRCDIR)/user.ld  $(addsuffix .o,$1) --whole-archive $(USER_LIB) -o $$@
 	$(SED) 's/$$$$FILE/$(notdir $1)/g' tools/piggy.S.in > $(USER_OBJDIR)/piggy.S
 	$(AS) $(USER_OBJDIR)/piggy.S -o $$@.piggy.o
 endef
