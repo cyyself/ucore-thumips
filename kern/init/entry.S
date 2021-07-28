@@ -20,6 +20,16 @@ kernel_entry:
 	.align 4
 reset:
   /* from u-boot */
+  /* set kseg0 uncached */
+  sync
+  nop
+  mfc0  $t0, CP0_CONFIG
+  nop
+  andi  $t1, $t0, 7
+  subu  $t0, $t0, $t1
+  addiu $t0, $t0, 2
+  mtc0  $t0, CP0_CONFIG
+  nop
 	/* Clear watch registers */
 	mtc0	$zero, CP0_WATCHLO
 	mtc0	$zero, CP0_WATCHHI

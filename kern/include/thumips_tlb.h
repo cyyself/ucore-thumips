@@ -55,7 +55,7 @@ static inline uint32_t pte2tlblow(pte_t pte)
   t |= THUMIPS_TLB_ENTRYL_V;
   /* always ignore ASID */
   t |= THUMIPS_TLB_ENTRYL_G;
-  t |= (3<<3);
+  t |= (2<<3);
   if(ptep_s_write(&pte))
     t |= THUMIPS_TLB_ENTRYL_D;
   return t;
