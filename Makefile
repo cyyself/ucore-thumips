@@ -111,10 +111,12 @@ MAKEDEPEND = $(CLANG) -M $(CFLAGS) $(INCLUDES) -o $(DEPDIR)/$*.d $<
 
 .PHONY: all checkdirs clean qemu debug
 
-all: checkdirs boot/loader.bin $(OBJDIR)/ucore-kernel-initrd
+all: checkdirs boot/loader.bin $(OBJDIR)/ucore-kernel-initrd.bin
 
 $(shell mkdir -p $(DEP_DIR))
 
+obj/ucore-kernel-initrd.bin: obj/ucore-kernel-initrd
+	$(OBJCOPY) -O binary $< $@
 
 obj/ucore-kernel:   $(OBJ) tools/kernel.ld
 	@echo LINK $@
